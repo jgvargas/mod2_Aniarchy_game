@@ -8,6 +8,12 @@ public class PlayerController : MonoBehaviour {
 	public float speed;
 	public Text scoreText;
 	public Text winText;
+	public int winningScore;
+
+	// Threshold is used to determine the distance a player falls before respawning
+	public float threshold;
+	// Assigned an empty game opject for spawn point to be assigned
+	public Transform playerSpawnPoint = null;
 
 	public float jumpSpeed = 100.0f;
 	private bool onGround = false;
@@ -38,6 +44,12 @@ public class PlayerController : MonoBehaviour {
 	//FixedUpdate: Before any physics is applied
 	void FixedUpdate()
 	{
+	// Used to spawn player when falling off the map
+		if (transform.position.y < threshold) {
+			transform.position = playerSpawnPoint.position;
+			rigidbody_ref.velocity = new Vector3(0, 0, 0);
+		}
+	// Code for player movement
 		float moveHorizontal = Input.GetAxis ("Horizontal");
 		float moveVertical = Input.GetAxis ("Vertical");
 
@@ -48,6 +60,7 @@ public class PlayerController : MonoBehaviour {
 
 	}
 
+	// 
 	void OnTriggerEnter( Collider other)
 	{
 		if (other.gameObject.CompareTag("PickUp"))
@@ -61,11 +74,13 @@ public class PlayerController : MonoBehaviour {
 	void SetCountText()
 	{
 		scoreText.text = "Count: " + score_count.ToString ();
-		if (score_count >= 3) {
+		if (score_count >= winningScore) {
 			winText.text = "You Win!";
 		}
 	}
 
+	// OnCollisionStay: Called once per frame for every collider/rigidbody
+	// 					that is touching rigidbody/collider
 	void OnCollisionStay ()
 	{
 		onGround = true;
