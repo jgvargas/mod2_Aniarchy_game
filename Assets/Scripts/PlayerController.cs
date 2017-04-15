@@ -1,35 +1,48 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : NetworkBehaviour {
 
 	public float speed;
-	public Text scoreText;
-	public Text winText;
+
+	// Threshold is used to determine the distance a player falls before respawning
+	public float threshold;
+	// Assigned an empty game opject for spawn point to be assigned
+	public Transform playerSpawnPoint;
 
 	public float jumpSpeed = 100.0f;
 	private bool onGround = false;
 
-	// Private: only accessible from script
-	private int score_count;
+    //Used to assing an individual player a score
+    ScoreScript score;
 
 	// Physics component
-	public Rigidbody rigidbody_ref;
+	Rigidbody rigidbody_ref;
 
-	void Start()
+    public override void OnStartLocalPlayer()
+    {
+        score = GameObject.Find("GameManager").GetComponent<ScoreScript>();
+        playerSpawnPoint = GameObject.Find("SpawnPoint1").transform;
+        Camera.main.GetComponent<CameraController>().target = transform;
+        rigidbody_ref = GetComponent<Rigidbody>();
+
+    }
+
+    void Start()
 	{
-		score_count = 0;
-		rigidbody_ref = GetComponent<Rigidbody> ();
-		SetCountText ();
-		winText.text = "";
+
 	}
 
 	//Update: Called before a frame is rendered. 
 	void Update()
 	{
-		if (Input.GetKeyDown("space"))
+        if (!isLocalPlayer)
+            return;
+
+        if (Input.GetKeyDown("space"))
 		{
 			rigidbody_ref.AddForce(Vector3.up * jumpSpeed);
 		}
@@ -38,6 +51,16 @@ public class PlayerController : MonoBehaviour {
 	//FixedUpdate: Before any physics is applied
 	void FixedUpdate()
 	{
+        if (!isLocalPlayer)
+            return;
+
+	// Used to spawn player when falling off the map
+		if (transform.position.y < threshold) {
+			transform.position = playerSpawnPoint.position;
+			rigidbody_ref.velocity = new Vector3(0, 0, 0);
+		}
+
+	// Code for player movement
 		float moveHorizontal = Input.GetAxis ("Horizontal");
 		float moveVertical = Input.GetAxis ("Vertical");
 
@@ -48,24 +71,35 @@ public class PlayerController : MonoBehaviour {
 
 	}
 
+	//
 	void OnTriggerEnter( Collider other)
 	{
 		if (other.gameObject.CompareTag("PickUp"))
 		{
 			other.gameObject.SetActive( false);
-			score_count = score_count + 1;
-			SetCountText ();
+            score.AddPoints(1);
+			score.SetCountText ();
 		}
+
 	}
 
-	void SetCountText()
-	{
-		scoreText.text = "Count: " + score_count.ToString ();
-		if (score_count >= 3) {
-			winText.text = "You Win!";
-		}
-	}
+    void OnCollisionEnter( Collision col )
+    {
 
+        if (col.gameObject.CompareTag("Player"))
+        {
+            Rigidbody otherRigidbody = col.collider.GetComponent<Rigidbody>();
+            Vector3 test = GetComponent<Rigidbody>().velocity;
+
+            otherRigidbody.AddForce(test * otherRigidbody.mass * Time.deltaTime * 100);
+        }
+
+        
+    }
+
+
+	// OnCollisionStay: Called once per frame for every collider/rigidbody
+	// 					that is touching rigidbody/collider
 	void OnCollisionStay ()
 	{
 		onGround = true;
