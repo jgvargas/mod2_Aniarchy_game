@@ -4,10 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
-	
-	public Text scoreText;
-	public Text winText;
-	public int winningScore;
 
 	// Threshold is used to determine the distance a player falls before respawning
 	public float threshold;
@@ -24,12 +20,17 @@ public class PlayerController : MonoBehaviour {
 	// Physics component
 	public Rigidbody rigidbody_ref;
 
+	ScoreScript score; 
+	Camera cam;
+
+
+	public float distance = 5.0f;
+
 	void Start()
 	{
-		score_count = 0;
 		rigidbody_ref = GetComponent<Rigidbody> ();
-		SetCountText ();
-		winText.text = "";
+		score = GetComponent<ScoreScript> ();
+		cam = GameObject.Find ("Player Camera").GetComponent<Camera>();
 	}
 
 	//Update: Called before a frame is rendered. 
@@ -48,34 +49,37 @@ public class PlayerController : MonoBehaviour {
 		if (transform.position.y < threshold) {
 			transform.position = playerSpawnPoint.position;
 			rigidbody_ref.velocity = new Vector3(0, 0, 0);
+
+			// Also, decrease points of fallen player
+			score.SubPoints(1);
+			score.SetCountText();
 		}
 	// Code for player movement
 		float moveHorizontal = Input.GetAxis ("Horizontal");
 		float moveVertical = Input.GetAxis ("Vertical");
 
+		// Ignores player input for movement and auto moves
+		//transform.position = transform.position + Camera.main.transform.forward * distance * Time.deltaTime;
+
 		//Ribidbody: class, .AddForce to move RB
 		Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical);
 
-		rigidbody_ref.AddForce (movement * speed);
+		Vector3 actMovement = cam.transform.TransformDirection (movement);
+		//Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical * cam.y);
+
+		//Transform actualDirection = cam. (movement);
+		rigidbody_ref.AddForce (actMovement * speed);
 
 	}
 
-	// 
+	// Calculates points from ScoreScript
 	void OnTriggerEnter( Collider other)
 	{
 		if (other.gameObject.CompareTag("PickUp"))
 		{
 			other.gameObject.SetActive( false);
-			score_count = score_count + 1;
-			SetCountText ();
-		}
-	}
-
-	void SetCountText()
-	{
-		scoreText.text = "Count: " + score_count.ToString ();
-		if (score_count >= winningScore) {
-			winText.text = "You Win!";
+			score.AddPoints(1);
+			score.SetCountText();
 		}
 	}
 
@@ -94,4 +98,3 @@ public class PlayerController : MonoBehaviour {
 		onGround = false;
 	}
 }
-
