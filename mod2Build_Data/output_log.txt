@@ -1,0 +1,104 @@
+Initialize engine version: 5.5.2f1 (3829d7f588f3)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: NVIDIA GeForce GTX 1060 6GB (ID=0x1c03)
+    Vendor:   NVIDIA
+    VRAM:     3072 MB
+    Driver:   21.21.13.7878
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\UnityEngine.UI.dll (this message is harmless)
+Loading C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
+Platform assembly: C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
+Loading C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
+Platform assembly: C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll (this message is harmless)
+Loading C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
+- Completed reload, in  0.025 seconds
+Platform assembly: C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\System.Core.dll (this message is harmless)
+Platform assembly: C:\Users\Saul\Desktop\School\Game Prog Class\mod2_project-MapTest2.0\mod2Build_Data\Managed\System.dll (this message is harmless)
+desktop: 1920x1080 60Hz; virtual: 1920x1080 at 0,0
+<RI> Initializing input.
+<RI> Input initialized.
+<RI> Initialized touch support.
+UnloadTime: 1.089462 ms
+Setting up 1 worker threads for Enlighten.
+  Thread -> id: 424 -> priority: 1 
+MatchMakingClient ListMatches :https://mm.unet.unity3d.com/json/reply/ListMatchRequest
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+MatchMakingClient Join :https://mm.unet.unity3d.com/json/reply/JoinMatchRequest
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+The referenced script on this Behaviour (Game Object 'Level_1_PowerUpSpawnGate') is missing!
+ 
+(Filename:  Line: 1754)
+
+The referenced script on this Behaviour (Game Object 'Level_1_PowerUpSpawnGate') is missing!
+ 
+(Filename:  Line: 1754)
+
+The referenced script on this Behaviour (Game Object 'Level_1_South_ark') is missing!
+ 
+(Filename:  Line: 1754)
+
+The referenced script on this Behaviour (Game Object 'Level_1_South_ark') is missing!
+ 
+(Filename:  Line: 1754)
+
+The referenced script on this Behaviour (Game Object 'Level_1_ground') is missing!
+ 
+(Filename:  Line: 1754)
+
+The referenced script on this Behaviour (Game Object 'Level_1_ground') is missing!
+ 
+(Filename:  Line: 1754)
+
+The referenced script on this Behaviour (Game Object 'Arch') is missing!
+ 
+(Filename:  Line: 1754)
+
+The referenced script on this Behaviour (Game Object 'Arch') is missing!
+ 
+(Filename:  Line: 1754)
+
+The referenced script on this Behaviour (Game Object 'Level_1_side_ark') is missing!
+ 
+(Filename:  Line: 1754)
+
+The referenced script on this Behaviour (Game Object 'Level_1_side_ark') is missing!
+ 
+(Filename:  Line: 1754)
+
+Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
+UnloadTime: 0.249045 ms
+
+Unloading 3 unused Assets to reduce memory usage. Loaded Objects now: 446.
+Total: 0.469715 ms (FindLiveObjects: 0.037734 ms CreateObjectMapping: 0.017810 ms MarkObjects: 0.409944 ms  DeleteObjects: 0.003924 ms)
+
+MatchMakingClient DropConnection :https://mm.unet.unity3d.com/json/reply/DropConnectionRequest
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
+MatchMakingClient DropConnection :https://mm.unet.unity3d.com/json/reply/DropConnectionRequest
+ 
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
+
+NullReferenceException
+  at (wrapper managed-to-native) UnityEngine.Transform:INTERNAL_get_position (UnityEngine.Vector3&)
+  at UnityEngine.Transform.get_position () [0x00000] in <filename unknown>:0 
+  at CameraController.LateUpdate () [0x00000] in <filename unknown>:0 
+ 
+(Filename:  Line: -1)
+
+UnloadTime: 3.131335 ms
+
+Unloading 20 unused Assets to reduce memory usage. Loaded Objects now: 294.
+Total: 0.281648 ms (FindLiveObjects: 0.012074 ms CreateObjectMapping: 0.013282 ms MarkObjects: 0.210707 ms  DeleteObjects: 0.045281 ms)
+
