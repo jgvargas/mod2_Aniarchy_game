@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
 public class ScoreScript : MonoBehaviour {
 
@@ -10,6 +11,7 @@ public class ScoreScript : MonoBehaviour {
 	public int winningScore;
 
 	// Private: only accessible from script
+    //[SyncVar]
 	private int score_count;
 
 	// Use this for initialization
@@ -27,7 +29,7 @@ public class ScoreScript : MonoBehaviour {
 
 	public void SetCountText()
 	{
-		scoreText.text = "Score: " + score_count.ToString () + " of " + winningScore.ToString();
+        scoreText.text = "Score: " + score_count.ToString();
 
 		if (score_count >= winningScore) {
 			winText.text = "You Win!";
@@ -36,11 +38,13 @@ public class ScoreScript : MonoBehaviour {
 
 	public void AddPoints(int i)
 	{
+
+
 		score_count += i;
 	}
 
 	public void SubPoints( int i)
 	{
-		score_count -= i;
+        score_count -= i;
 	}
 }
