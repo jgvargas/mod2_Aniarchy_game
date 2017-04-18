@@ -9,9 +9,8 @@ using System.Collections;
 public class CameraController : MonoBehaviour {
 
 	public GameObject player;
-    public Transform target;
-    public Vector3 offset;
-
+	public Vector3 offset;
+    
 
 	//Used to adjust damping of camera angle and player orientation
 	public float damping = 1;
@@ -19,14 +18,13 @@ public class CameraController : MonoBehaviour {
 
 	void Start ()
 	{
-        offset = new Vector3(0, 2, -12);
-    //offset = transform.position - player.transform.position;
-    }
+		offset = transform.position - player.transform.position;
+	}
 
 	void LateUpdate ()
 	{	
 		// Old implementation
-		transform.position = target.position + offset;
+		transform.position = player.transform.position + offset;
 		/*
 		float currentAngle = transform.eulerAngles.y;
 		

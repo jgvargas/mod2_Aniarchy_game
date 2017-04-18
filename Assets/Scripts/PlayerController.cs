@@ -6,35 +6,48 @@ using UnityEngine.UI;
 
 public class PlayerController : NetworkBehaviour {
 
-	public float speed;
-
 	// Threshold is used to determine the distance a player falls before respawning
 	public float threshold;
 	// Assigned an empty game opject for spawn point to be assigned
-	public Transform playerSpawnPoint;
+	public Transform playerSpawnPoint = null;
 
-	public float jumpSpeed = 100.0f;
+	public float speed;
+	public float jumpHeight = 100.0f;
 	private bool onGround = false;
 
-    //Used to assing an individual player a score
-    ScoreScript score;
+	// Private: only accessible from script
+	//private int score_count;
 
 	// Physics component
-	Rigidbody rigidbody_ref;
+	public Rigidbody rigidbody_ref;
+
+	ScoreScript score; 
+	Camera cam;
+
+
+	public float distance = 5.0f;
+
+   // public override void OnSta()
+    //{
+        //score = GetComponent<ScoreScript>();
+      //  score = GameObject.Find("RoundManager").GetComponent<ScoreScript>();
+    //}
 
     public override void OnStartLocalPlayer()
-    {
-        score = GameObject.Find("GameManager").GetComponent<ScoreScript>();
-        playerSpawnPoint = GameObject.Find("SpawnPoint1").transform;
-        Camera.main.GetComponent<CameraController>().target = transform;
-        rigidbody_ref = GetComponent<Rigidbody>();
-
+	{
+		rigidbody_ref = GetComponent<Rigidbody> ();
+		
+        //score = GameObject.Find("RoundManager").GetComponent<ScoreScript>();
+        //Sets camera target when player is spawned on network
+        Camera.main.GetComponent<ThirdPersonCamera>().lookAt = transform;
+        cam = GameObject.Find ("Player Camera").GetComponent<Camera>();
+        
     }
 
     void Start()
-	{
+    {
 
-	}
+    }
 
 	//Update: Called before a frame is rendered. 
 	void Update()
@@ -42,9 +55,9 @@ public class PlayerController : NetworkBehaviour {
         if (!isLocalPlayer)
             return;
 
-        if (Input.GetKeyDown("space"))
+		if (Input.GetKeyDown("space") && onGround == true)
 		{
-			rigidbody_ref.AddForce(Vector3.up * jumpSpeed);
+			jump ();
 		}
 	}
 
@@ -58,45 +71,43 @@ public class PlayerController : NetworkBehaviour {
 		if (transform.position.y < threshold) {
 			transform.position = playerSpawnPoint.position;
 			rigidbody_ref.velocity = new Vector3(0, 0, 0);
-		}
 
+			// Also, decrease points of fallen player
+			score.SubPoints(1);
+			score.SetCountText();
+		}
 	// Code for player movement
 		float moveHorizontal = Input.GetAxis ("Horizontal");
 		float moveVertical = Input.GetAxis ("Vertical");
 
+		// Ignores player input for movement and auto moves
+		//transform.position = transform.position + Camera.main.transform.forward * distance * Time.deltaTime;
+
 		//Ribidbody: class, .AddForce to move RB
 		Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical);
 
-		rigidbody_ref.AddForce (movement * speed);
+		Vector3 actMovement = cam.transform.TransformDirection (movement);
+		//Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical * cam.y);
+
+		//Transform actualDirection = cam. (movement);
+		rigidbody_ref.AddForce (actMovement * speed);
 
 	}
 
-	//
+	// Calculates points from ScoreScript
 	void OnTriggerEnter( Collider other)
 	{
-		if (other.gameObject.CompareTag("PickUp"))
+        if (!NetworkServer.active)
+            return;
+
+        if (other.gameObject.CompareTag("PickUp"))
 		{
-			other.gameObject.SetActive( false);
-            score.AddPoints(1);
-			score.SetCountText ();
+            NetworkServer.Destroy(other.gameObject);
+
+			score.AddPoints(1);
+			score.SetCountText();
 		}
-
 	}
-
-    void OnCollisionEnter( Collision col )
-    {
-
-        if (col.gameObject.CompareTag("Player"))
-        {
-            Rigidbody otherRigidbody = col.collider.GetComponent<Rigidbody>();
-            Vector3 test = GetComponent<Rigidbody>().velocity;
-
-            otherRigidbody.AddForce(test * otherRigidbody.mass * Time.deltaTime * 100);
-        }
-
-        
-    }
-
 
 	// OnCollisionStay: Called once per frame for every collider/rigidbody
 	// 					that is touching rigidbody/collider
@@ -104,5 +115,28 @@ public class PlayerController : NetworkBehaviour {
 	{
 		onGround = true;
 	}
-}
 
+    //Calculates force to apply for collision
+    void OnCollisionEnter(Collision col)
+    {
+
+        if (col.gameObject.CompareTag("Player"))
+        {
+            Rigidbody otherRigidbody = col.collider.GetComponent<Rigidbody>();
+            Vector3 test = GetComponent<Rigidbody>().velocity;
+
+
+            otherRigidbody.AddRelativeForce(test);
+            test = Vector3.Reflect(test, Vector3.right);
+        }
+
+    }
+
+    void jump()
+	{
+		Vector3 jump = new Vector3 (0.0f, jumpHeight, 0.0f);
+		rigidbody_ref.AddForce (jump);
+
+		onGround = false;
+	}
+}
