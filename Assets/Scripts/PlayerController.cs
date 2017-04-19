@@ -8,23 +8,23 @@ public class PlayerController : NetworkBehaviour {
 
 	// Threshold is used to determine the distance a player falls before respawning
 	public float threshold;
+
 	// Assigned an empty game opject for spawn point to be assigned
 	public Transform playerSpawnPoint = null;
 
+	public float powerTimer;
+
 	public float speed;
+	public float speedMod = 1.0f;
 	public float jumpHeight = 100.0f;
 	private bool onGround = false;
-
-	// Private: only accessible from script
-	//private int score_count;
 
 	// Physics component
 	public Rigidbody rigidbody_ref;
 
-	ScoreScript score; 
+	ScoreScript score;
+
 	Camera cam;
-
-
 	public float distance = 5.0f;
 
    // public override void OnSta()
@@ -41,6 +41,8 @@ public class PlayerController : NetworkBehaviour {
         //Sets camera target when player is spawned on network
         Camera.main.GetComponent<ThirdPersonCamera>().lookAt = transform;
         cam = GameObject.Find ("Player Camera").GetComponent<Camera>();
+
+		powerTimer = Time.time + 10;
         
     }
 
@@ -59,6 +61,9 @@ public class PlayerController : NetworkBehaviour {
 		{
 			jump ();
 		}
+
+		// Checks if time for PowerUp has expired
+		PowerUpTimer ();
 	}
 
 	//FixedUpdate: Before any physics is applied
@@ -80,9 +85,6 @@ public class PlayerController : NetworkBehaviour {
 		float moveHorizontal = Input.GetAxis ("Horizontal");
 		float moveVertical = Input.GetAxis ("Vertical");
 
-		// Ignores player input for movement and auto moves
-		//transform.position = transform.position + Camera.main.transform.forward * distance * Time.deltaTime;
-
 		//Ribidbody: class, .AddForce to move RB
 		Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical);
 
@@ -90,7 +92,7 @@ public class PlayerController : NetworkBehaviour {
 		//Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical * cam.y);
 
 		//Transform actualDirection = cam. (movement);
-		rigidbody_ref.AddForce (actMovement * speed);
+		rigidbody_ref.AddForce (actMovement * (speed * speedMod));
 
 	}
 
@@ -106,6 +108,16 @@ public class PlayerController : NetworkBehaviour {
 
 			score.AddPoints(1);
 			score.SetCountText();
+		}
+
+		if (other.gameObject.CompareTag ("PowerUp")) {
+			NetworkServer.Destroy (other.gameObject);
+
+			// Cause player to glow, indicates Player has PowerUp
+
+			// Check to see which PowerUp was picked up
+			if (other.name == "SpeedUp")
+				speedMod = 2;
 		}
 	}
 
@@ -138,5 +150,19 @@ public class PlayerController : NetworkBehaviour {
 		rigidbody_ref.AddForce (jump);
 
 		onGround = false;
+	}
+
+	void PowerUpTimer()
+	{
+		//Update time
+		float timeLeft = powerTimer - Time.time;
+
+		//Time expired; reset values
+		if (timeLeft < 0) 
+		{
+			timeLeft = 0.0f;
+			speedMod = 1;
+		}
+
 	}
 }

@@ -12,10 +12,7 @@ public class PickUpsController : NetworkBehaviour {
     float nextSpawn;
 
     Vector3 spawnPosition;
-
     
-    
-
     // Use this for initialization
     public override void OnStartServer()
     {
@@ -28,9 +25,6 @@ public class PickUpsController : NetworkBehaviour {
         {
             Spawn();
         }
-
-       
-
     }
 
     // Update is called once per frame
