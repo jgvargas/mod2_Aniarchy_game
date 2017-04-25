@@ -8,7 +8,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 	public Transform camTransform;
 
 	private const float Y_MIN = 5.0f;
-	private const float Y_MAX = 50.0f;
+	private const float Y_MAX = 90.0f;
 
 	private Camera cam;
 
@@ -32,11 +32,10 @@ public class ThirdPersonCamera : MonoBehaviour {
 
 		currentY = Mathf.Clamp (currentY, Y_MIN, Y_MAX);
 	}
-
 	private void LateUpdate () {
-        Vector3 direction = new Vector3 (0, 0, -distance);
-        Quaternion rotation = Quaternion.Euler (currentY, currentX, 0);
-        camTransform.position = lookAt.position + rotation * direction;
+		Vector3 direction = new Vector3 (0, 0, -distance);
+		Quaternion rotation = Quaternion.Euler (currentY, currentX, 0);
+		camTransform.position = lookAt.position + rotation * direction;
 
 		camTransform.LookAt (lookAt.position);
 	}

@@ -10,7 +10,7 @@ public class CameraController : MonoBehaviour {
 
 	public GameObject player;
 	public Vector3 offset;
-    
+
 
 	//Used to adjust damping of camera angle and player orientation
 	public float damping = 1;
