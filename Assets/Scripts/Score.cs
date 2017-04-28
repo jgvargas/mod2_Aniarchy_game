@@ -7,9 +7,9 @@ public class Score : NetworkBehaviour
 {
 
     // Private: only accessible from script
-    [SyncVar (hook = "OnChangeScore")] public int score_count;
-    public GameObject[] players;
-        string scores = "";
+    [SyncVar] public int score_count;
+    GameObject[] players;
+
 
     // Use this for initialization
     void Start()
@@ -25,18 +25,7 @@ public class Score : NetworkBehaviour
 
     }
 
-    public void OnChangeScore(int s)
-    {
-
-        //if (!isServer)
-        //    return;
-        //players = GameObject.FindGameObjectsWithTag("Player");
-
-
-       // scoreUI.instance.scoreText.text = scores;//"Score: " + s.ToString(); ;
-
-    }
-
+    //Updates UI text to server and all clients
     [ClientRpc]
     void RpcUpdateUI(string scores)
     {
@@ -50,15 +39,7 @@ public class Score : NetworkBehaviour
 
         score_count += i;
 
-        scores = "";
-        players = GameObject.FindGameObjectsWithTag("Player");
-        foreach (GameObject p in players)
-        {
-            scores += "Score: " + p.GetComponent<Score>().score_count.ToString() + "      ";
-        }
-
-
-        RpcUpdateUI(scores);
+        SetUIText();
     }
 
     public void SubPoints(int i)
@@ -67,5 +48,21 @@ public class Score : NetworkBehaviour
             return;
 
         score_count -= i;
+
+        SetUIText();
+    }
+
+    //sets text to be used in UI
+    void SetUIText()
+    {
+        string scores = "";
+
+        players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject p in players)
+        {
+            scores += "Score: " + p.GetComponent<Score>().score_count.ToString() + "      ";
+        }
+
+        RpcUpdateUI(scores);
     }
 }
