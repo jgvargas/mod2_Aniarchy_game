@@ -21,23 +21,20 @@ public class PlayerController : NetworkBehaviour {
 	// Physics component
 	public Rigidbody rigidbody_ref;
 
-	ScoreScript score; 
+    //ScoreScript score; 
+    Score score;
 	Camera cam;
 
 
 	public float distance = 5.0f;
 
-   // public override void OnSta()
-    //{
-        //score = GetComponent<ScoreScript>();
-      //  score = GameObject.Find("RoundManager").GetComponent<ScoreScript>();
-    //}
+
 
     public override void OnStartLocalPlayer()
 	{
-		rigidbody_ref = GetComponent<Rigidbody> ();
-		
-        //score = GameObject.Find("RoundManager").GetComponent<ScoreScript>();
+       
+        rigidbody_ref = GetComponent<Rigidbody> ();
+
         //Sets camera target when player is spawned on network
         Camera.main.GetComponent<ThirdPersonCamera>().lookAt = transform;
         cam = GameObject.Find ("Player Camera").GetComponent<Camera>();
@@ -46,7 +43,7 @@ public class PlayerController : NetworkBehaviour {
 
     void Start()
     {
-
+        score = gameObject.GetComponent<Score>();
     }
 
 	//Update: Called before a frame is rendered. 
@@ -54,7 +51,7 @@ public class PlayerController : NetworkBehaviour {
 	{
         if (!isLocalPlayer)
             return;
-
+        
 		if (Input.GetKeyDown("space") && onGround == true)
 		{
 			jump ();
@@ -74,7 +71,7 @@ public class PlayerController : NetworkBehaviour {
 
 			// Also, decrease points of fallen player
 			score.SubPoints(1);
-			score.SetCountText();
+			//score.SetCountText();
 		}
 	// Code for player movement
 		float moveHorizontal = Input.GetAxis ("Horizontal");
@@ -97,15 +94,12 @@ public class PlayerController : NetworkBehaviour {
 	// Calculates points from ScoreScript
 	void OnTriggerEnter( Collider other)
 	{
-        if (!NetworkServer.active)
-            return;
 
         if (other.gameObject.CompareTag("PickUp"))
 		{
             NetworkServer.Destroy(other.gameObject);
 
 			score.AddPoints(1);
-			score.SetCountText();
 		}
 	}
 
