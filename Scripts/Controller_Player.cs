@@ -8,8 +8,8 @@ public class Controller_Player : NetworkBehaviour {
 
 	// Reference to the level's individual objects
 	// Flat level, mid level
-	public GameObject []level_mesh;
-	//public GameObject []level_flat;
+	public Renderer []level_mesh;
+	public Collider []level_collide;
 
 	// Threshold is used to determine the distance a player falls before respawning
 	public float threshold;
@@ -17,8 +17,12 @@ public class Controller_Player : NetworkBehaviour {
 	// Assigned an empty game opject for spawn point to be assigned
 	public Transform playerSpawnPoint = null;
 
-	public float powerTimer;
+	// Timer variables:
+	public float waitTimer;
+	float timer;
+	bool timerRunning;
 
+	// Player physics variables:
 	public float speed;
 	public float speedMod = 1.0f;
 	public float jumpHeight = 100.0f;
@@ -27,7 +31,9 @@ public class Controller_Player : NetworkBehaviour {
 	// Physics component
 	public Rigidbody rigidbody_ref;
 
-	ScoreScript score;
+	Controller_PickUps pkUps;
+
+	Score score;
 
 	Camera cam;
 	public float distance = 5.0f;
@@ -35,23 +41,21 @@ public class Controller_Player : NetworkBehaviour {
     public override void OnStartLocalPlayer()
 	{
 		rigidbody_ref = GetComponent<Rigidbody> ();
-		
-        score = GameObject.FindGameObjectWithTag("ScoreManager").GetComponent<ScoreScript>();
-        //Sets camera target when player is spawned on network
+
+		//Sets camera target when player is spawned on network
         Camera.main.GetComponent<ThirdPersonCamera>().lookAt = transform;
         cam = GameObject.Find ("Player Camera").GetComponent<Camera>();
 
-		powerTimer = Time.time + 10;
-        
-		//GameObject powerUps = Game
-		//level_mid = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<GameObject>().FindGameObjectsWithTag("MidLevel");
-		//level_flat = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<GameObject>().FindGameObjectsWithTag("FlatLevel");
+		// used to activate/deactivate stage GameObjects
+		level_mesh   = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<Renderer> ();
+		level_collide = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<Collider > ();
 
+		pkUps = GameObject.FindWithTag("PickUpSpawns").GetComponent < Controller_PickUps>();
 	}
 
 	public void Start()
 	{
-
+		score = gameObject.GetComponent<Score> ();
 	}
 
 	//Update: Called before a frame is rendered. 
@@ -61,12 +65,11 @@ public class Controller_Player : NetworkBehaviour {
             return;
 
 		if (Input.GetKeyDown("space") && onGround == true)
-		{
 			jump ();
-		}
 
 		// Checks if time for PowerUp has expired
-		PowerUpTimer ();
+		if (timerRunning)
+			PowerUpTimer ();
 	}
 
 	//FixedUpdate: Before any physics is applied
@@ -76,13 +79,14 @@ public class Controller_Player : NetworkBehaviour {
             return;
 
 	// Used to spawn player when falling off the map
-		if (transform.position.y < threshold) {
+		if (transform.position.y < threshold) 
+		{
 			transform.position = playerSpawnPoint.position;
 			rigidbody_ref.velocity = new Vector3(0, 0, 0);
 
 			// Also, decrease points of fallen player
 			score.SubPoints(1);
-			score.SetCountText();
+			//score.SetCountText();
 		}
 	// Code for player movement
 		float moveHorizontal = Input.GetAxis ("Horizontal");
@@ -94,7 +98,6 @@ public class Controller_Player : NetworkBehaviour {
 		Vector3 actMovement = cam.transform.TransformDirection (movement);
 
 		rigidbody_ref.AddForce (actMovement * (speed * speedMod));
-
 	}
 		
 	void OnTriggerEnter( Collider other)
@@ -102,26 +105,37 @@ public class Controller_Player : NetworkBehaviour {
 		// Calculates points from ScoreScript
         if (other.gameObject.CompareTag("PickUp"))
 		{
-			
-            NetworkServer.Destroy(other.gameObject);
+			// Visual effects for pickup
 
+			// Sound effects for pickup
+
+			// Remove Gameobject from stage
+            //NetworkServer.Destroy(other.gameObject);
+			other.gameObject.SetActive(false);
+
+			pkUps.Despawn (other.gameObject.transform);
 			score.AddPoints(1);
-			score.SetCountText();
 		}
 
 		if (other.gameObject.CompareTag ("PowerUp")) 
 		{
 			NetworkServer.Destroy (other.gameObject);
 
-			//foreach (GameObject level in level_mid)
-			//{
-			//	level.enabled = false;
-			//}
+			// Turns on/off different parts of stage
+			// True = 1, False = 0
+			toggleLevel (false);
+			timerRunning = true;
+
 			// Cause player to glow, indicates Player has PowerUp
 
 			// Check to see which PowerUp was picked up
 			//if (other.name == "SpeedUp")
 				//speedMod = 4;
+		}
+
+		if (other.gameObject.CompareTag ("LevelMod") )
+		{
+
 		}
 	}
 
@@ -141,12 +155,37 @@ public class Controller_Player : NetworkBehaviour {
             Rigidbody otherRigidbody = col.collider.GetComponent<Rigidbody>();
             Vector3 test = GetComponent<Rigidbody>().velocity;
 
-
             otherRigidbody.AddRelativeForce(test);
             test = Vector3.Reflect(test, Vector3.right);
         }
 
     }
+
+	void toggleLevel( bool status)
+	{
+		// Consider: Which is switched on/off MidLevel, FlatLevel?
+		//			 Each toggleLevel() call should enable/disable
+
+		// True = 1, False = 0
+		bool state = status; 
+		int rand = Random.Range (0, 1);
+
+		foreach (Renderer level in level_mesh)
+		{
+			if (level.CompareTag ("MidLevel") && rand == 0)
+				level.enabled = state;
+			else if (level.CompareTag ("FlatLevel") && rand == 1)
+				level.enabled = state;
+		}
+
+		foreach (Collider level in level_collide)
+		{
+			if (level.CompareTag("MidLevel") && rand == 0)
+				level.enabled = state;
+			else if (level.CompareTag ("FlatLevel") && rand == 1)
+				level.enabled = state;
+		} 
+	}
 
     void jump()
 	{
@@ -159,13 +198,15 @@ public class Controller_Player : NetworkBehaviour {
 	void PowerUpTimer()
 	{
 		//Update time
-		float timeLeft = powerTimer - Time.time;
-
-		//Time expired; reset values
-		if (timeLeft < 0) 
+		timer += Time.deltaTime;
+		if (timer > waitTimer)
 		{
-			timeLeft = 0.0f;
-			speedMod = 1;
+			// The PowerUp time has ended
+			timer = 0.0f;
+			timerRunning = false;
+
+			// True = 1, False = 0
+			toggleLevel (true);
 		}
 
 	}

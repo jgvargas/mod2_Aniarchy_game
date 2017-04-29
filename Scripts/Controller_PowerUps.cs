@@ -42,6 +42,11 @@ public class Controller_PowerUps : NetworkBehaviour {
 		}
 	}
 
+	void Decrease()
+	{
+
+	}
+
 	void Spawn()
 	{
 		spawnPosition = spawner [PowerUpCount].transform.position;

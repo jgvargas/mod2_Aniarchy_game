@@ -10,7 +10,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 	private const float Y_MIN = 5.0f;
 	private const float Y_MAX = 50.0f;
 
-	private Camera cam;
+	//private Camera cam;
 
 	public float distance;
 	private float currentX;
@@ -21,7 +21,7 @@ public class ThirdPersonCamera : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		camTransform = transform;
-		cam = Camera.main;
+		//cam = Camera.main;
 	}
 	
 	// Update is called once per frame
