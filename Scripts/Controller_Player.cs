@@ -31,18 +31,18 @@ public class Controller_Player : NetworkBehaviour {
 	// Physics component
 	public Rigidbody rigidbody_ref;
 
-	Controller_PickUps pkUps;
+	public Controller_PickUps pkUps;
 
 	Score score;
 
-	Camera cam;
+	public Camera cam;
 	public float distance = 5.0f;
 
     public override void OnStartLocalPlayer()
 	{
 		rigidbody_ref = GetComponent<Rigidbody> ();
-
-		//Sets camera target when player is spawned on network
+        //pkUps = p.GetComponent<Controller_PickUps>();
+        //Sets camera target when player is spawned on network
         Camera.main.GetComponent<ThirdPersonCamera>().lookAt = transform;
         cam = GameObject.Find ("Player Camera").GetComponent<Camera>();
 
@@ -50,21 +50,26 @@ public class Controller_Player : NetworkBehaviour {
 		level_mesh   = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<Renderer> ();
 		level_collide = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<Collider > ();
 
-		pkUps = GameObject.FindWithTag("PickUpSpawns").GetComponent < Controller_PickUps>();
-	}
+    }
 
-	public void Start()
-	{
-		score = gameObject.GetComponent<Score> ();
-	}
+    public void Start()
+    {
+       
+        score = gameObject.GetComponent<Score>();
+    }
+        
 
 	//Update: Called before a frame is rendered. 
 	void Update()
 	{
+
+        if (!pkUps)
+            pkUps = GameObject.Find("Spawner_PickUps").GetComponent<Controller_PickUps>();
+
         if (!isLocalPlayer)
             return;
 
-		if (Input.GetKeyDown("space") && onGround == true)
+        if (Input.GetKeyDown("space") && onGround == true)
 			jump ();
 
 		// Checks if time for PowerUp has expired
@@ -105,17 +110,16 @@ public class Controller_Player : NetworkBehaviour {
 		// Calculates points from ScoreScript
         if (other.gameObject.CompareTag("PickUp"))
 		{
-			// Visual effects for pickup
+            // Visual effects for pickup
 
-			// Sound effects for pickup
+            // Sound effects for pickup
 
-			// Remove Gameobject from stage
+            // Remove Gameobject from stage
             //NetworkServer.Destroy(other.gameObject);
-			other.gameObject.SetActive(false);
-
-			pkUps.Despawn (other.gameObject.transform);
-			score.AddPoints(1);
-		}
+            other.gameObject.SetActive(false);
+            pkUps.Despawn(other.gameObject.transform);
+            score.AddPoints(1);
+        }
 
 		if (other.gameObject.CompareTag ("PowerUp")) 
 		{
@@ -125,18 +129,17 @@ public class Controller_Player : NetworkBehaviour {
 			// True = 1, False = 0
 			toggleLevel (false);
 			timerRunning = true;
+            // Cause player to glow, indicates Player has PowerUp
 
-			// Cause player to glow, indicates Player has PowerUp
+            // Check to see which PowerUp was picked up
+            //if (other.name == "SpeedUp")
+            //speedMod = 4;
+        }
 
-			// Check to see which PowerUp was picked up
-			//if (other.name == "SpeedUp")
-				//speedMod = 4;
-		}
-
-		if (other.gameObject.CompareTag ("LevelMod") )
+		/*if (other.gameObject.CompareTag ("LevelMod") )
 		{
 
-		}
+		}*/
 	}
 
 	// OnCollisionStay: Called once per frame for every collider/rigidbody

@@ -9,7 +9,6 @@ public class ScoreUI : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		;
 		instance = this;
 	}
 

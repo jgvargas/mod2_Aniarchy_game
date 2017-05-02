@@ -16,7 +16,7 @@ public class Controller_PickUps : NetworkBehaviour {
 	// Array used to hold all possible spawn locations
 	public Transform[] spawner;
 	bool []spawnerActive = new bool [6];
-
+    
     Vector3 spawnPosition;
     
     // Use this for initialization
@@ -41,6 +41,8 @@ public class Controller_PickUps : NetworkBehaviour {
 
     // Update is called once per frame
     void Update () {
+        if (!isServer)
+            return;
 
 		if (nextSpawn <= Time.time && PickUpCount < numberOfPickUps)
         {
