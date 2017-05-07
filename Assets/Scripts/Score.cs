@@ -6,63 +6,61 @@ using UnityEngine.Networking;
 public class Score : NetworkBehaviour
 {
 
-    // Private: only accessible from script
-    [SyncVar] public int score_count;
-    GameObject[] players;
+	// Private: only accessible from script
+	[SyncVar] public int score_count;
+	GameObject[] players;
 
+	// Use this for initialization
+	void Start()
+	{
+		players = GameObject.FindGameObjectsWithTag("Player");  
+		score_count = 0;
+	}
 
-    // Use this for initialization
-    void Start()
-    {
-        players = GameObject.FindGameObjectsWithTag("Player");
+	// Update is called once per frame
+	void Update()
+	{
 
-        score_count = 0;
-    }
+	}
 
-    // Update is called once per frame
-    void Update()
-    {
+	//Updates UI text to server and all clients
+	[ClientRpc]
+	void RpcUpdateUI(string scores)
+	{
+		ScoreUI.instance.scoreText.text = scores;       
+	}
 
-    }
+	public void AddPoints(int i)
+	{
+		if (!isServer)
+			return;
 
-    //Updates UI text to server and all clients
-    [ClientRpc]
-    void RpcUpdateUI(string scores)
-    {
-        scoreUI.instance.scoreText.text = scores;       
-    }
+		score_count += i;
 
-    public void AddPoints(int i)
-    {
-        if (!isServer)
-            return;
+		SetUIText();
+	}
 
-        score_count += i;
+	public void SubPoints(int i)
+	{
+		if (!isServer)
+			return;
 
-        SetUIText();
-    }
+		score_count -= i;
 
-    public void SubPoints(int i)
-    {
-        if (!isServer)
-            return;
+		SetUIText();
+	}
 
-        score_count -= i;
+	//sets text to be used in UI
+	void SetUIText()
+	{
+		string scores = "";
 
-        SetUIText();
-    }
+		players = GameObject.FindGameObjectsWithTag("Player");
+		foreach (GameObject p in players)
+		{
+			scores += "Score: " + p.GetComponent<Score>().score_count.ToString() + "      ";
+		}
 
-    //sets text to be used in UI
-    void SetUIText()
-    {
-        string scores = "";
-
-        players = GameObject.FindGameObjectsWithTag("Player");
-        foreach (GameObject p in players)
-        {
-            scores += "Score: " + p.GetComponent<Score>().score_count.ToString() + "      ";
-        }
-
-        RpcUpdateUI(scores);
-    }
+		RpcUpdateUI(scores);
+	}
 }
