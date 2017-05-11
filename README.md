@@ -34,4 +34,4 @@ Animarchy is a multiplayer Game where players compete to gather the most points 
 ## How to Play
 
 Use the mouse to control your camera and the WASD or arrow keys to move.
-Press "space" to jump and press again to double jump.
+Press "space" to jump and press again to double jump. Players collect points by collecting cubes. Level stage can be temporarily modified by touching Star shaped powerups.
