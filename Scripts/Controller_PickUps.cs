@@ -15,7 +15,7 @@ public class Controller_PickUps : NetworkBehaviour {
 
 	// Array used to hold all possible spawn locations
 	public Transform[] spawner;
-	bool []spawnerActive = new bool [6];
+	bool []spawnerActive = new bool [7];
     
     Vector3 spawnPosition;
     

@@ -4,12 +4,17 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Controller_Audio))]
 public class Controller_Player : NetworkBehaviour {
 
 	// Reference to the level's individual objects
 	// Flat level, mid level
 	public Renderer []level_mesh;
 	public Collider []level_collide;
+
+	private Controller_Audio audio;
+
+
 
 	// Threshold is used to determine the distance a player falls before respawning
 	public float threshold;
@@ -19,6 +24,7 @@ public class Controller_Player : NetworkBehaviour {
 
 	// Timer variables:
 	public float waitTimer;
+	float preTimer = 3;		// Must be 0 before powerUp is active
 	float timer;
 	bool timerRunning;
 
@@ -31,12 +37,27 @@ public class Controller_Player : NetworkBehaviour {
 	// Physics component
 	public Rigidbody rigidbody_ref;
 
-	public Controller_PickUps pkUps;
+    Controller_PickUps pkUps;
+	Controller_PowerUps pwUps;
 
 	Score score;
 
+    public Material[] mats = new Material[5];
+
+    [SyncVar]
+    public string pname = "player";
+
+    [SyncVar]
+    public int playerMaterial = 0;
+
+    [SyncVar (hook="OnToggleLevel")]
+    public bool levelActive = true;
+
 	public Camera cam;
 	public float distance = 5.0f;
+
+
+
 
     public override void OnStartLocalPlayer()
 	{
@@ -50,31 +71,47 @@ public class Controller_Player : NetworkBehaviour {
 		level_mesh   = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<Renderer> ();
 		level_collide = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<Collider > ();
 
-    }
+		audio = this.GetComponent<Controller_Audio> ();
 
-    public void Start()
+		// random variable, chooses a song
+
+		audio.playSound(1);
+    }
+ 
+
+	public void Start()
     {
-       
-        score = gameObject.GetComponent<Score>();
+
+		score = gameObject.GetComponent<Score>();
+		levelActive = true;
+
+        //locally sets appropriate player skin for each player
+        Renderer[] playerSkins = GetComponentsInChildren<Renderer>();
+        foreach (Renderer player in playerSkins)
+            player.material = mats[playerMaterial];
     }
         
 
 	//Update: Called before a frame is rendered. 
 	void Update()
 	{
-
         if (!pkUps)
             pkUps = GameObject.Find("Spawner_PickUps").GetComponent<Controller_PickUps>();
+
+		if (!pwUps)
+			pwUps = GameObject.Find("Spawner_PowerUps").GetComponent<Controller_PowerUps>();
+		
+
+        // Checks if time for PowerUp has expired
+		if (timerRunning)
+			if (regTimer(preTimer) == true)
+				PowerUpTimer();
 
         if (!isLocalPlayer)
             return;
 
         if (Input.GetKeyDown("space") && onGround == true)
 			jump ();
-
-		// Checks if time for PowerUp has expired
-		if (timerRunning)
-			PowerUpTimer ();
 	}
 
 	//FixedUpdate: Before any physics is applied
@@ -86,6 +123,9 @@ public class Controller_Player : NetworkBehaviour {
 	// Used to spawn player when falling off the map
 		if (transform.position.y < threshold) 
 		{
+			//  PLays, globally, falling into water sound
+			audio.playSound(1);
+
 			transform.position = playerSpawnPoint.position;
 			rigidbody_ref.velocity = new Vector3(0, 0, 0);
 
@@ -110,9 +150,10 @@ public class Controller_Player : NetworkBehaviour {
 		// Calculates points from ScoreScript
         if (other.gameObject.CompareTag("PickUp"))
 		{
-            // Visual effects for pickup
-
             // Sound effects for pickup
+
+			// Shouldn't be played globally...
+			audio.playSound(0);
 
             // Remove Gameobject from stage
             //NetworkServer.Destroy(other.gameObject);
@@ -123,23 +164,21 @@ public class Controller_Player : NetworkBehaviour {
 
 		if (other.gameObject.CompareTag ("PowerUp")) 
 		{
-			NetworkServer.Destroy (other.gameObject);
 
-			// Turns on/off different parts of stage
-			// True = 1, False = 0
-			toggleLevel (false);
-			timerRunning = true;
+			//NetworkServer.Destroy (other.gameObject);
+			audio.playSound(5);
+			other.gameObject.SetActive (false);
+			pwUps.Despawn (other.gameObject.transform);
+
+            // Turns on/off different parts of stage
+            // True = 1, False = 0
+            timerRunning = true;
+            levelActive = false;
+         	
             // Cause player to glow, indicates Player has PowerUp
-
-            // Check to see which PowerUp was picked up
-            //if (other.name == "SpeedUp")
-            //speedMod = 4;
+            
         }
-
-		/*if (other.gameObject.CompareTag ("LevelMod") )
-		{
-
-		}*/
+	
 	}
 
 	// OnCollisionStay: Called once per frame for every collider/rigidbody
@@ -149,7 +188,7 @@ public class Controller_Player : NetworkBehaviour {
 		onGround = true;
 	}
 
-    //Calculates force to apply for collision
+    //Calculates force to apply for collision onto Player
     void OnCollisionEnter(Collision col)
     {
 
@@ -164,7 +203,7 @@ public class Controller_Player : NetworkBehaviour {
 
     }
 
-	void toggleLevel( bool status)
+	void OnToggleLevel( bool status)
 	{
 		// Consider: Which is switched on/off MidLevel, FlatLevel?
 		//			 Each toggleLevel() call should enable/disable
@@ -173,7 +212,10 @@ public class Controller_Player : NetworkBehaviour {
 		bool state = status; 
 		int rand = Random.Range (0, 1);
 
-		foreach (Renderer level in level_mesh)
+        level_mesh = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<Renderer>();
+        level_collide = GameObject.FindGameObjectWithTag("MainLevel").GetComponentsInChildren<Collider>();
+
+        foreach (Renderer level in level_mesh)
 		{
 			if (level.CompareTag ("MidLevel") && rand == 0)
 				level.enabled = state;
@@ -188,7 +230,7 @@ public class Controller_Player : NetworkBehaviour {
 			else if (level.CompareTag ("FlatLevel") && rand == 1)
 				level.enabled = state;
 		} 
-	}
+    }
 
     void jump()
 	{
@@ -200,6 +242,7 @@ public class Controller_Player : NetworkBehaviour {
 
 	void PowerUpTimer()
 	{
+
 		//Update time
 		timer += Time.deltaTime;
 		if (timer > waitTimer)
@@ -208,8 +251,27 @@ public class Controller_Player : NetworkBehaviour {
 			timer = 0.0f;
 			timerRunning = false;
 
-			// True = 1, False = 0
-			toggleLevel (true);
+            // True = 1, False = 0
+            levelActive = true;
+			//toggleLevel (true);
+		}
+
+	}
+
+	bool regTimer(float val)
+	{
+
+		//Update time
+		timer += Time.deltaTime;
+		if (timer > val)
+		{
+			// The PowerUp time has ended
+			timer = 0.0f;
+			//toggleLevel (true);
+			return true;
+		} 
+		else {
+			return false;
 		}
 
 	}
